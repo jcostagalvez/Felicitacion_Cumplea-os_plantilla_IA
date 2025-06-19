@@ -2,6 +2,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎉</text></svg>">
+
   <title>Felicidades Fina</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
@@ -21,27 +23,23 @@
       text-align: center;
       height: 100vh;
     }
-    .intro {
+
+    #intro-canvas {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 3rem;
+      background-color: black;
       z-index: 3000;
       opacity: 1;
       transition: opacity 3s ease;
-      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .intro::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: black;
-      z-index: -1;
+    #intro-canvas.hidden { 
+      opacity: 0; 
+      pointer-events: none;
     }
 
     #confetti-canvas {
@@ -49,10 +47,10 @@
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      z-index: 9999; /* más que la intro */
+      z-index: 3001;
       pointer-events: none;
     }
-    .intro.hidden { opacity: 0; pointer-events: none; }
+
     .hidden { display: none !important; }
 
     header {
@@ -182,7 +180,7 @@
   </style>
 </head>
 <body>
-  <div class="intro" id="intro">¡FELIZ CUMPLEAÑOS MAMA!</div>
+  <canvas id="intro-canvas"></canvas>
   <canvas id="confetti-canvas"></canvas>
   <button class="audio-control" id="audio-toggle" aria-label="Toggle audio">🔇</button>
   <audio id="bg-music" autoplay loop>
@@ -281,6 +279,32 @@
       }, 4000);
     }
 
+    // Draw intro text on canvas
+    function drawIntroText() {
+      const canvas = document.getElementById('intro-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Set canvas size to match window
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Draw black background
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Draw text
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      
+      // Adjust font size based on screen width
+      const fontSize = Math.min(canvas.width * 0.1, 80);
+      ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
+      
+      const text = "¡FELIZ CUMPLEAÑOS MAMA!";
+      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+    }
+
     // Audio controls & autoplay workaround
     const audio = document.getElementById("bg-music");
     const audioToggle = document.getElementById("audio-toggle");
@@ -299,7 +323,11 @@
 
     window.onload = () => {
       document.body.classList.add('loaded');
+      drawIntroText();
       launchConfetti();
+
+      // Handle window resize
+      window.addEventListener('resize', drawIntroText);
 
       // Intentar reproducir audio automáticamente
       audio.play().catch(() => {
@@ -314,9 +342,9 @@
       });
 
       setTimeout(() => {
-        document.getElementById("intro").classList.add('hidden');
+        const introCanvas = document.getElementById("intro-canvas");
+        introCanvas.classList.add('hidden');
         setTimeout(() => {
-          document.getElementById("intro").style.display = 'none';
           startCountdown();
           startCarousel();
         }, 3000);
