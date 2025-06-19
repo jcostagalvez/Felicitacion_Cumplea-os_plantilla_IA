@@ -340,13 +340,14 @@
 
       // Intentar reproducir audio automáticamente
       audio.play().catch(() => {
-        const playAudio = () => {
+        // Si falla el autoplay, esperar interacción del usuario
+        const enableAudio = () => {
           audio.play().catch(() => {});
-          window.removeEventListener('click', playAudio);
-          window.removeEventListener('touchstart', playAudio);
+          window.removeEventListener('click', enableAudio);
+          window.removeEventListener('touchstart', enableAudio);
         };
-        window.addEventListener('click', playAudio);
-        window.addEventListener('touchstart', playAudio);
+        window.addEventListener('click', enableAudio);
+        window.addEventListener('touchstart', enableAudio);
       });
 
       setTimeout(() => {
@@ -356,7 +357,7 @@
           startCountdown();
           startCarousel();
         }, 3000);
-      }, 3000);
+      }, 6000);
     };
   </script>
 </body>
