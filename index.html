@@ -1,0 +1,315 @@
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Felicidades Fina</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: 'Inter', sans-serif;
+      color: white;
+      height: 100%; width: 100%;
+      overflow-x: hidden;
+      background: #c0c0c0; /* tono plateado moderno */
+    }
+    body.loaded {
+      display: flex; flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      text-align: center;
+      height: 100vh;
+    }
+    .intro {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3rem;
+      opacity: 1;
+      z-index: 1000;
+      transition: opacity 3s ease;
+    }
+    .intro.hidden { opacity: 0; pointer-events: none; }
+    #confetti-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 6000; pointer-events: none;
+    }
+    .hidden { display: none !important; }
+
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 110px;
+      background: linear-gradient(135deg, #a259ff, #7f3fbf);
+      z-index: 100;
+      padding: 20px 10px;
+      box-sizing: border-box;
+      color: white;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+      line-height: 1.1;
+    }
+    header .subtitle {
+      margin-top: 6px;
+      font-size: 1.2rem;
+      color: #eee;
+      animation: fadeIn 2s ease-in-out;
+      line-height: 1.2;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Carousel como fondo */
+    .carousel-bg {
+      position: fixed;
+      top: 110px; /* desde abajo del header */
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - 110px);
+      background-color: #c0c0c0; /* plateado */
+      overflow: hidden;
+      z-index: 1;
+      display: flex;
+      align-items: center;  /* centrar verticalmente */
+      justify-content: center; /* centrar horizontalmente */
+      flex-direction: column;
+      padding: 0 20px;
+    }
+
+    .carousel-bg img {
+      max-height: 100%;
+      max-width: 100%;
+      object-fit: contain; /* mantiene aspecto, se ve toda la imagen */
+      user-select: none;
+      pointer-events: none;
+      filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
+      position: absolute;
+      opacity: 0;
+      transition: opacity 1s ease;
+    }
+    .carousel-bg img.active {
+      opacity: 1;
+      position: relative;
+      z-index: 2;
+    }
+
+    main {
+      position: relative;
+      z-index: 300;
+      width: 100%;
+      max-width: 600px;
+      /* Ajustamos para centrar verticalmente dentro de carousel-bg */
+      margin: 0 auto;
+      /* Para que el main se posicione dentro del contenedor y baje a mitad */
+      flex-grow: 1;
+      display: flex;
+      align-items: center; /* vertical centering */
+      justify-content: center;
+      min-height: calc(100vh - 110px); /* para asegurar ocupar el alto restante */
+      pointer-events: auto; /* para que el contenido sea interactivo */
+    }
+
+    .countdown {
+      font-size: 2.5rem;
+      background: rgba(127, 63, 191, 0.85);
+      color: white;
+      padding: 20px 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      max-width: 90vw;
+      user-select: none;
+    }
+
+    .audio-control {
+      position: fixed; top: 10px; right: 10px;
+      background: #ffffffcc; color: #333;
+      border: none; padding: 10px;
+      border-radius: 8px; cursor: pointer;
+      z-index: 101;
+      font-size: 1.2rem;
+      user-select: none;
+    }
+
+    @media (max-width: 600px) {
+      header {
+        height: 90px;
+        padding: 15px 10px;
+      }
+      header h1 {
+        font-size: 1.8rem;
+      }
+      header .subtitle {
+        font-size: 1rem;
+      }
+      main {
+        min-height: calc(100vh - 90px);
+        padding: 10px;
+      }
+      .countdown {
+        font-size: 1.8rem;
+        padding: 15px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+  <div class="intro" id="intro">¡FELIZ CUMPLEAÑOS MAMA!</div>
+  <button class="audio-control" id="audio-toggle" aria-label="Toggle audio">🔇</button>
+  <audio id="bg-music" autoplay loop>
+    <source src="videoplayback.mp3" type="audio/mp3" />
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+  <header>
+    <h1>🎁 ¡Cuenta atrás para tu sorpresa! 🎉</h1>
+    <p class="subtitle">El regalo más especial está por llegar...</p>
+  </header>
+
+  <div class="carousel-bg" id="carousel-bg">
+    <img src="foto_1.jpeg" class="active" alt="Foto 1" />
+    <img src="foto_2.jpeg" alt="Foto 2" />
+    <img src="foto_3.jpeg" alt="Foto 3" />
+    <img src="foto_5.jpeg" alt="Foto 5" />
+    <img src="foto_6.jpeg" alt="Foto 6" />
+    <img src="foto_7.jpeg" alt="Foto 7" />
+    <img src="foto_8.jpeg" alt="Foto 8" />
+  </div>
+
+  <main>
+    <div class="countdown" id="countdown" aria-live="polite" aria-atomic="true" aria-relevant="text"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script>
+    // Countdown
+    function startCountdown() {
+      const countdownElement = document.getElementById("countdown");
+      let storedDate = localStorage.getItem("countdownDate");
+      let countdownDate;
+      if (storedDate) {
+        countdownDate = new Date(storedDate).getTime();
+      } else {
+        countdownDate = new Date().getTime() +
+          (5 * 24 * 60 * 60 * 1000) + // 5 días
+          (1 * 60 * 60 * 1000) + // 1 hora
+          (1 * 60 * 1000) + // 1 minuto
+          1000; // 1 segundo
+        localStorage.setItem("countdownDate", new Date(countdownDate).toISOString());
+      }
+
+      const updateCountdown = () => {
+        const now = new Date().getTime();
+        const distance = countdownDate - now;
+        if (distance < 0) {
+          countdownElement.innerHTML = "¡Tiempo agotado!";
+          clearInterval(interval);
+          return;
+        }
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      };
+
+      updateCountdown();
+      const interval = setInterval(updateCountdown, 1000);
+    }
+
+    // Confetti animation
+    function launchConfetti() {
+      const duration = 5 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 45, spread: 360, ticks: 90, zIndex: 999 };
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+        const particleCount = 200 * (timeLeft / duration);
+        confetti(Object.assign({}, defaults, {
+          particleCount,
+          origin: {
+            x: randomInRange(0, 1),
+            y: randomInRange(0, 1)
+          }
+        }));
+      }, 250);
+    }
+
+    // Carousel background slideshow
+    function startCarousel() {
+      const images = document.querySelectorAll('#carousel-bg img');
+      let index = 0;
+      setInterval(() => {
+        images[index].classList.remove('active');
+        index = (index + 1) % images.length;
+        images[index].classList.add('active');
+      }, 4000);
+    }
+
+    // Audio controls & autoplay workaround
+    const audio = document.getElementById("bg-music");
+    const audioToggle = document.getElementById("audio-toggle");
+    let isMuted = false;
+
+    audioToggle.addEventListener('click', () => {
+      isMuted = !isMuted;
+      audio.muted = isMuted;
+      audioToggle.textContent = isMuted ? '🔇' : '🔊';
+      if (!isMuted) {
+        audio.play().catch(() => {});
+      } else {
+        audio.pause();
+      }
+    });
+
+    window.onload = () => {
+      document.body.classList.add('loaded');
+      launchConfetti();
+
+      // Intentar reproducir audio automáticamente
+      audio.play().catch(() => {
+        // Si no se puede reproducir sin interacción, esperar a que el usuario haga click
+        const playAudio = () => {
+          audio.play().catch(() => {});
+          window.removeEventListener('click', playAudio);
+          window.removeEventListener('touchstart', playAudio);
+        };
+        window.addEventListener('click', playAudio);
+        window.addEventListener('touchstart', playAudio);
+      });
+
+      setTimeout(() => {
+        document.getElementById("intro").classList.add('hidden');
+        setTimeout(() => {
+          document.getElementById("intro").style.display = 'none';
+          startCountdown();
+          startCarousel();
+        }, 3000);
+      }, 3000);
+    };
+  </script>
+</body>
+</html>
