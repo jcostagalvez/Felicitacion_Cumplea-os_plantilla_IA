@@ -14,7 +14,7 @@
       color: white;
       height: 100%; width: 100%;
       overflow-x: hidden;
-      background: #c0c0c0; /* tono plateado moderno */
+      background: #c0c0c0;
     }
     body.loaded {
       display: flex; flex-direction: column;
@@ -32,22 +32,10 @@
       z-index: 3000;
       opacity: 1;
       transition: opacity 3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
     }
 
     #intro-canvas.hidden { 
       opacity: 0; 
-      pointer-events: none;
-    }
-
-    #confetti-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 3001;
       pointer-events: none;
     }
 
@@ -89,16 +77,16 @@
     /* Carousel como fondo */
     .carousel-bg {
       position: fixed;
-      top: 110px; /* desde abajo del header */
+      top: 110px;
       left: 0;
       width: 100vw;
       height: calc(100vh - 110px);
-      background-color: #c0c0c0; /* plateado */
+      background-color: #c0c0c0;
       overflow: hidden;
       z-index: 1;
       display: flex;
-      align-items: center;  /* centrar verticalmente */
-      justify-content: center; /* centrar horizontalmente */
+      align-items: center;
+      justify-content: center;
       flex-direction: column;
       padding: 0 20px;
     }
@@ -106,7 +94,7 @@
     .carousel-bg img {
       max-height: 100%;
       max-width: 100%;
-      object-fit: contain; /* mantiene aspecto, se ve toda la imagen */
+      object-fit: contain;
       user-select: none;
       pointer-events: none;
       filter: drop-shadow(0 0 5px rgba(0,0,0,0.3));
@@ -125,15 +113,13 @@
       z-index: 300;
       width: 100%;
       max-width: 600px;
-      /* Ajustamos para centrar verticalmente dentro de carousel-bg */
       margin: 0 auto;
-      /* Para que el main se posicione dentro del contenedor y baje a mitad */
       flex-grow: 1;
       display: flex;
-      align-items: center; /* vertical centering */
+      align-items: center;
       justify-content: center;
-      min-height: calc(100vh - 110px); /* para asegurar ocupar el alto restante */
-      pointer-events: auto; /* para que el contenido sea interactivo */
+      min-height: calc(100vh - 110px);
+      pointer-events: auto;
     }
 
     .countdown {
@@ -181,7 +167,6 @@
 </head>
 <body>
   <canvas id="intro-canvas"></canvas>
-  <canvas id="confetti-canvas"></canvas>
   <button class="audio-control" id="audio-toggle" aria-label="Toggle audio">🔇</button>
   <audio id="bg-music" autoplay loop>
     <source src="videoplayback.mp3" type="audio/mp3" />
@@ -207,7 +192,6 @@
     <div class="countdown" id="countdown" aria-live="polite" aria-atomic="true" aria-relevant="text"></div>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <script>
     // Countdown
     function startCountdown() {
@@ -244,28 +228,76 @@
       const interval = setInterval(updateCountdown, 1000);
     }
 
-    // Confetti animation
-    function launchConfetti() {
-      const duration = 5 * 1000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 45, spread: 360, ticks: 90, zIndex: 999 };
-      function randomInRange(min, max) {
-        return Math.random() * (max - min) + min;
+    // Confetti animation - Versión simplificada para canvas propio
+    function createConfetti() {
+      const canvas = document.getElementById('intro-canvas');
+      const ctx = canvas.getContext('2d');
+      
+      // Ajustar tamaño del canvas
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      
+      // Dibujar fondo negro
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Dibujar texto
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const fontSize = Math.min(canvas.width * 0.1, 80);
+      ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
+      ctx.fillText("¡FELIZ CUMPLEAÑOS MAMA!", canvas.width / 2, canvas.height / 2);
+      
+      // Partículas de confeti
+      const particles = [];
+      const particleCount = 150;
+      
+      // Crear partículas
+      for (let i = 0; i < particleCount; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          size: Math.random() * 10 + 5,
+          color: `hsl(${Math.random() * 360}, 100%, 50%)`,
+          speedX: Math.random() * 5 - 2.5,
+          speedY: Math.random() * 3 + 2
+        });
       }
-      const interval = setInterval(function() {
-        const timeLeft = animationEnd - Date.now();
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-        const particleCount = 200 * (timeLeft / duration);
-        confetti(Object.assign({}, defaults, {
-          particleCount,
-          origin: {
-            x: randomInRange(0, 1),
-            y: randomInRange(0, 1)
+      
+      // Animación del confeti
+      function animate() {
+        // Limpiar con fondo negro semi-transparente para efecto de rastro
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Redibujar texto (para que quede siempre visible)
+        ctx.fillStyle = 'white';
+        ctx.fillText("¡FELIZ CUMPLEAÑOS MAMA!", canvas.width / 2, canvas.height / 2);
+        
+        // Dibujar y mover partículas
+        for (let i = 0; i < particles.length; i++) {
+          const p = particles[i];
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, p.y, p.size, p.size);
+          
+          p.x += p.speedX;
+          p.y += p.speedY;
+          
+          // Reiniciar partículas que salen de la pantalla
+          if (p.y > canvas.height) {
+            p.y = 0;
+            p.x = Math.random() * canvas.width;
           }
-        }));
-      }, 250);
+          if (p.x > canvas.width || p.x < 0) {
+            p.speedX = -p.speedX;
+          }
+        }
+        
+        requestAnimationFrame(animate);
+      }
+      
+      animate();
     }
 
     // Carousel background slideshow
@@ -277,32 +309,6 @@
         index = (index + 1) % images.length;
         images[index].classList.add('active');
       }, 4000);
-    }
-
-    // Draw intro text on canvas
-    function drawIntroText() {
-      const canvas = document.getElementById('intro-canvas');
-      const ctx = canvas.getContext('2d');
-      
-      // Set canvas size to match window
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      
-      // Draw black background
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      
-      // Draw text
-      ctx.fillStyle = 'white';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      // Adjust font size based on screen width
-      const fontSize = Math.min(canvas.width * 0.1, 80);
-      ctx.font = `bold ${fontSize}px 'Inter', sans-serif`;
-      
-      const text = "¡FELIZ CUMPLEAÑOS MAMA!";
-      ctx.fillText(text, canvas.width / 2, canvas.height / 2);
     }
 
     // Audio controls & autoplay workaround
@@ -323,15 +329,17 @@
 
     window.onload = () => {
       document.body.classList.add('loaded');
-      drawIntroText();
-      launchConfetti();
+      createConfetti(); // Esta función ahora maneja tanto el texto como el confeti
 
       // Handle window resize
-      window.addEventListener('resize', drawIntroText);
+      window.addEventListener('resize', () => {
+        const canvas = document.getElementById('intro-canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      });
 
       // Intentar reproducir audio automáticamente
       audio.play().catch(() => {
-        // Si no se puede reproducir sin interacción, esperar a que el usuario haga click
         const playAudio = () => {
           audio.play().catch(() => {});
           window.removeEventListener('click', playAudio);
